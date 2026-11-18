@@ -2,7 +2,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {classify,connectGrid,cutBonds,components,assess} from '../src/rules.js';
 function board(rows){const cells=[];for(const [gz,row] of rows.entries())for(const [gx,ch] of [...row].entries())if(ch!==' ')cells.push({id:cells.length,gx,gz,detachedFromShell:ch==='Q',damaged:false});connectGrid(cells);return cells;}
-test('threshold boundaries preserve weak / peel / break bands',()=>{assert.equal(classify(.299),'blocked');assert.equal(classify(.3),'peel');assert.equal(classify(.7),'peel');assert.equal(classify(.701),'break');});
+test('threshold boundaries preserve weak / peel / break bands',()=>{assert.equal(classify(.599),'blocked');assert.equal(classify(.6),'peel');assert.equal(classify(.8),'peel');assert.equal(classify(.801),'break');});
 test('score is largest peeled component count, never total or percent',()=>{const s=assess(board(['QQQ  QQ Q']));assert.equal(s.score,3);assert.equal(s.peeled,6);});
 test('first user example continues while attached cells can enlarge peeled group',()=>{const s=assess(board(['OO','QQQQ','QQQQQ']));assert.equal(s.score,9);assert.equal(s.reason,null);assert.equal(s.potential,11);});
 test('second user example ends when detached remainder cannot beat largest',()=>{const s=assess(board(['OO','','QQQQQ','QQQQQQ']));assert.equal(s.score,11);assert.equal(s.reason,'no-improvement');});

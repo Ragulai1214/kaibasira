@@ -13,8 +13,8 @@ test('height-aware cuboid contact lets blade pass below raised muscle',()=>{
 });
 test('complete peeling releases one compound body that translates and rotates freely',()=>{
  const g=game();for(const p of g.cells)p.detachedFromShell=true;g.rebuild({x:1,z:0});assert.equal(g.groups.length,1);assert.equal(g.groups[0].anchored,false);
- const body=g.groups[0].body,start=body.translation(),rotation=body.rotation();for(let i=0;i<90;i++)g.step(1/120);
- assert.ok(body.translation().y>start.y+.5);assert.notDeepEqual(body.rotation(),rotation);assert.ok(body.translation().x>start.x);g.dispose();
+ const body=g.groups[0].body,start=body.worldCom(),rotation=body.rotation();for(let i=0;i<90;i++)g.step(1/120);
+ assert.ok(body.worldCom().y>start.y+.5);assert.notDeepEqual(body.rotation(),rotation);assert.ok(body.worldCom().x>start.x);g.dispose();
 });
 test('severed column gets independent collider/body; neighbours retain their bonds',()=>{
  const g=game(),p=g.cells[0],other=g.cells.find(q=>q.id!==p.id),neighbours=[...other.links].filter(id=>id!==p.id);cutBonds(g.cells,p.id);g.rebuild({x:1,z:0},new Set([p.id]));
@@ -51,7 +51,8 @@ test('a falling fragment contacts the curved shell rather than an invisible boun
 test('fresh game restores all bonds, zero score and anchored state',()=>{const first=game();cutBonds(first.cells,0);first.dispose();const fresh=game();assert.equal(fresh.groups.length,1);assert.ok(fresh.groups[0].anchored);assert.equal(fresh.cells.filter(p=>p.detachedFromShell).length,0);assert.ok(fresh.cells[0].links.size>0);fresh.dispose();});
 test('tip-first stroke passes through the previously stuck path after peeling',()=>{
  const g=new GamePhysics(makeMuscleCells(100,.31),makeShell().children[0].geometry,{...config});g.tool.setTranslation({x:2.8,y:g.toolHeight(),z:.3},true);
- let blocked=0;for(let i=0;i<240;i++){const at=g.tool.translation();blocked+=Number(g.interact({x:at.x-.03,z:at.z},Math.PI/2,.5,.5,1/120).blocked);g.step(1/120);}
+ const force=(config.peel+config.break)/2;
+ let blocked=0;for(let i=0;i<240;i++){const at=g.tool.translation();blocked+=Number(g.interact({x:at.x-.03,z:at.z},Math.PI/2,force,force,1/120).blocked);g.step(1/120);}
  assert.equal(blocked,0);assert.ok(g.tool.translation().x<-4);assert.ok(g.cells.filter(p=>p.detachedFromShell).length>30);g.dispose();
 });
 test('handle overlap with peeled material no longer pins translation',()=>{

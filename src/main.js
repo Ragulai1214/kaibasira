@@ -8,6 +8,8 @@ import {GameAudio} from './game-audio.js';
 import {resultComment} from './result-comment.js';
 
 const $=id=>document.getElementById(id);
+$('force').querySelector('.track').style.background=`linear-gradient(to right,#738f96 0 ${C.peel*100}%,#d8d797 ${C.peel*100}% ${C.break*100}%,#ef8268 ${C.break*100}%)`;
+document.querySelector('.legend span').style.color=C.peeledColor;
 const renderer=new THREE.WebGLRenderer({canvas:$('scene'),antialias:true,stencil:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setClearColor('#214741');renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 const scene=new THREE.Scene();
 // A slightly inclined overhead view makes vertical flight and shell curvature readable.

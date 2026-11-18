@@ -1,4 +1,4 @@
-export const config = {duration:60,count:100,size:.31,stiffness:45,damping:8,sensitivity:1,maxSpeed:9,peel:.3,break:.7,fragmentSpeed:4,fragmentSpin:5,floatHeight:.2,peelLaunchSpeed:7,peeledColor:'#c9a65f'};
+export const config = {duration:60,count:100,size:.3,stiffness:45,damping:8,sensitivity:1.3,maxSpeed:10,peel:.6,break:.8,fragmentSpeed:6,fragmentSpin:8,floatHeight:.2,peelLaunchSpeed:7,peeledColor:'#e9cfb4'};
 export function classify(force,c=config){return force>c.break?'break':force>=c.peel?'peel':'blocked';}
 // Material bonds are never recreated by physical contact.
 export function connectGrid(items){
