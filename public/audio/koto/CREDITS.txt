@@ -1,0 +1,9 @@
+Koto samples: FluidR3_GM by Frank Wen, rendered for MIDI.js Soundfonts by Benjamin Gleitzman.
+Source: https://gleitz.github.io/midi-js-soundfonts/FluidR3_GM/koto-mp3.js
+Project and distribution license: https://github.com/gleitz/midi-js-soundfonts
+License stated by the distributor: Creative Commons Attribution 3.0 United States
+https://creativecommons.org/licenses/by/3.0/us/
+
+Changes: selected nine individually rendered MP3 notes from the soundfont bundle.
+The game's original 16-bar composition sequences these notes at 84 BPM with volume envelopes and a short echo.
+No endorsement by the sample creators is implied.
