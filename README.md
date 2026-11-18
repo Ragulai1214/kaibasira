@@ -86,3 +86,7 @@ npm run preview
 3. Actionsの「Deploy game to GitHub Pages」が成功すると https://Ragulai1214.github.io/kaibasira/ で公開。
 
 以降はmainへのpushごとにテスト・ビルド・公開が自動で実行されます。公開URLで遊ぶ際にローカルPCの起動や `npm run dev` は不要です。`dist` をGitへ追加する必要もありません。公開用ビルドは `--base=/kaibasira/` を指定し、琴の音源も含めて配信します。
+
+## 開発者用の調整ボタン
+
+通常は調整ボタンを表示しません。ゲームの読み込み後、ブラウザの開発者ツールのConsoleで `kaibasiraDebug.show()` を実行すると表示できます。`kaibasiraDebug.hide()` でボタンと開いている調整パネルを両方隠します。表示状態は保存せず、ページを再読み込みすると非表示に戻ります。GitHub Pages版でも同じコマンドを使えます。

@@ -54,7 +54,12 @@ $('start').disabled=true;$('start').textContent='3D物理を準備中…';
 $('start').onclick=()=>{fanfare.unlock();reset();running=true;$('overlay').hidden=true;last=performance.now();};
 $('retry').onclick=()=>$('start').click();
 $('sound').onclick=()=>{fanfare.enabled=!fanfare.enabled;$('sound').textContent=fanfare.enabled?'音：ON':'音：OFF';$('sound').setAttribute('aria-pressed',String(fanfare.enabled));if(fanfare.enabled)fanfare.unlock();else fanfare.stop();};
-$('settings').onclick=()=>{$('debug').hidden=!$('debug').hidden;};$('restart').onclick=()=>{$('debug').hidden=true;$('start').click();};
+let debugEnabled=false;
+window.kaibasiraDebug=Object.freeze({
+ show(){debugEnabled=true;$('settings').hidden=false;return '調整ボタンを表示しました';},
+ hide(){debugEnabled=false;$('settings').hidden=true;$('debug').hidden=true;return '調整ボタンを非表示にしました';},
+});
+$('settings').onclick=()=>{if(debugEnabled)$('debug').hidden=!$('debug').hidden;};$('restart').onclick=()=>{if(!debugEnabled)return;$('debug').hidden=true;$('start').click();};
 const parameters=[['duration','制限時間',10,180,5],['count','内部直方体の本数',20,160,1],['size','内部直方体の幅',.2,.4,.01],['stiffness','バネ定数',10,100,1],['damping','減衰',2,20,.5],['sensitivity','スワイプ感度',.3,3,.1],['maxSpeed','最大移動速度',2,15,.5],['peel','剥離閾値',.05,.65,.05],['break','破損閾値',.35,.95,.05],['fragmentSpeed','破片の横方向速度',1,8,.5],['fragmentSpin','空中の回転速度',0,10,.5],['floatHeight','剥離部分の浮く高さ',.12,.35,.01],['peelLaunchSpeed','完全剥離時の跳ぶ勢い',2,9,.5]];
 for(const [key,name,min,max,inc] of parameters){
  const label=document.createElement('label');label.textContent=name;const input=document.createElement('input');Object.assign(input,{type:'number',min,max,step:inc,value:C[key]});
