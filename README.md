@@ -78,3 +78,11 @@ npm run preview
 プレイ開始後、琴のサンプルを使ったオリジナルの16小節（84 BPM、約46秒）がループします。音量は効果音より控えめにしています。結果画面・消音・別タブへの切り替えで止まり、リトライでは先頭から再生します。「音：ON／OFF」はBGMと効果音の共通スイッチです。
 
 音源：FluidR3_GM（Frank Wen）、MIDI.js Soundfonts（Benjamin Gleitzman）によるレンダリング。配布元表記のCC BY 3.0 USに従い、出典と利用条件を `public/audio/koto/CREDITS.txt` に収録しています。曲はこのゲーム用に作成したものです。必要な9音（計約164 KB）のみ同梱し、プレイ中に外部サイトへのアクセスは行いません。
+
+## GitHub Pagesでの公開
+
+1. GitHubのリポジトリで Settings → Pages → Build and deployment → Source を GitHub Actions に設定。
+2. `.github/workflows/deploy.yml` をコミットして main にpush。
+3. Actionsの「Deploy game to GitHub Pages」が成功すると https://Ragulai1214.github.io/kaibasira/ で公開。
+
+以降はmainへのpushごとにテスト・ビルド・公開が自動で実行されます。公開URLで遊ぶ際にローカルPCの起動や `npm run dev` は不要です。`dist` をGitへ追加する必要もありません。公開用ビルドは `--base=/kaibasira/` を指定し、琴の音源も含めて配信します。
