@@ -7,3 +7,5 @@ body.celebrating>header,body.celebrating>#hint,body.celebrating>#counts,body.cel
 #sound{position:absolute;right:14px;top:72px;z-index:8;font-size:11px;padding:7px 10px}body.celebrating #sound{top:14px}#result-transition{position:absolute;inset:0;background:#f6ecd1;opacity:0;pointer-events:none;z-index:10}
 @media(max-height:500px){.result-heading{padding-top:8px}.result-heading h1{font-size:23px;margin:3px}.result-heading>small{font-size:9px}.result-bottom{padding-bottom:8px}.result-metrics strong{font-size:26px}.result-bottom p{margin:4px}#retry{padding:7px 24px}}
 #result-comment{font-size:clamp(15px,2vw,22px);font-weight:700;color:#f4e2a6;margin:8px 0}@media(max-height:500px){#result-comment{font-size:15px;margin:4px 0}}
+#play-restart{white-space:nowrap}
+@media(max-width:950px) and (pointer:coarse){#play-restart{font-size:12px;padding:7px 11px;border-radius:8px;min-height:34px}}
