@@ -54,7 +54,8 @@ function finish(reason){
  $('result-reason').textContent=reasons[reason];$('result-reason').hidden=!reasons[reason];$('result-detail').textContent=`最大の塊 ${snapshot.score} 本 · 剥離 ${status.peeled} 本 / 未剥離 ${status.remaining} 本`;
 }
 $('start').disabled=true;$('start').textContent='3D物理を準備中…';
-$('start').onclick=()=>{fanfare.unlock();reset();running=true;$('overlay').hidden=true;last=performance.now();};
+$('start').onclick=()=>{fanfare.unlock();reset();running=true;$('overlay').hidden=true;$('debug').hidden=true;$('play-restart').hidden=false;last=performance.now();};
+$('play-restart').onclick=()=>{if(running)$('start').click();};
 $('retry').onclick=()=>$('start').click();
 $('sound').onclick=()=>{fanfare.enabled=!fanfare.enabled;$('sound').textContent=fanfare.enabled?'音：ON':'音：OFF';$('sound').setAttribute('aria-pressed',String(fanfare.enabled));if(fanfare.enabled)fanfare.unlock();else fanfare.stop();};
 let debugEnabled=false;
