@@ -10,7 +10,7 @@ body.booting>:not(#boot-screen){visibility:hidden!important}
 </head><body class="booting">
 <div id="boot-screen" role="status"><strong>貝柱研究所</strong><p id="boot-message">貝柱を準備しています…</p><a href="" id="boot-reload" hidden>再読み込み</a><noscript><p>遊ぶにはJavaScriptを有効にしてください。</p></noscript></div>
 <canvas id="scene"></canvas>
-<header><div class="brand">貝柱研究所 <small>PROTOTYPE / 02</small></div><div class="stats"><span>残り <b id="time">60</b> 秒</span><span>最大の塊 <b id="score">0</b> 点</span></div><button id="play-restart" hidden>最初から</button><button id="settings" hidden>調整</button></header>
+<header><div class="brand">貝柱研究所 <small>PROTOTYPE / 02</small></div><div class="stats"><span>残り <b id="time">60.00</b> 秒</span><span>最大の塊 <b id="score">0</b> 点</span></div><button id="play-restart" hidden>最初から</button><button id="settings" hidden>調整</button></header>
 <div id="hint">右側をスワイプして移動 · 左のダイヤルで回転</div>
 <div id="counts">剥離 0 本 · 最大の塊 0 本</div>
 <div id="force"><div class="labels"><span>弱い</span><span>剥がせる</span><span>強すぎ！</span></div><div class="track"><i id="needle"></i></div><small id="feedback">ヘラを貝柱に差し込もう</small></div>
@@ -20,7 +20,7 @@ body.booting>:not(#boot-screen){visibility:hidden!important}
 <div id="overlay"><section><small>ちぎらず、するっと。</small><h1>貝柱を綺麗に<br>取るゲーム</h1><p>ゆっくりすぎると、押し返される。<br>速すぎると、ちぎれる。<br>ちょうどいい力で、60秒の貝柱しごと。</p><div id="results" hidden></div><button id="start">実験をはじめる →</button><p class="note">横画面推奨 · 左手で回転 / 右手でスワイプ<br>PC：ドラッグで移動、A / D または ← / → で回転</p></section></div>
 <div id="result-screen" hidden aria-live="polite">
  <div class="result-heading"><small>本日のひと皿</small><h1>出来上がり</h1><p id="result-comment"></p><p id="result-reason"></p></div>
- <div class="result-bottom"><div class="result-metrics"><div>最大の塊の点数<strong><span id="result-score">0</span><small> 点</small></strong></div><div>かかった時間<strong><span id="result-time">0.0</span><small> 秒</small></strong></div></div><p id="result-detail"></p><button id="retry">もう一度挑戦 →</button></div>
+ <div class="result-bottom"><div class="result-metrics"><div>最大の塊の点数<strong><span id="result-score">0</span><small> 点</small></strong></div><div>かかった時間<strong><span id="result-time">0.00</span><small> 秒</small></strong></div></div><p id="result-detail"></p><button id="retry">もう一度挑戦 →</button></div>
 </div>
 <button id="sound" aria-pressed="true" aria-label="BGMと効果音の切り替え">音：ON</button><div id="result-transition" aria-hidden="true"></div>
 <script type="module">

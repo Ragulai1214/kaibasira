@@ -25,7 +25,7 @@ function rectangularSashimiPlate(){
 
 export function resultSnapshot(cells,duration,remaining){
  const cluster=components(cells,p=>p.detachedFromShell).sort((a,b)=>b.length-a.length)[0]??[];
- return {cluster,score:cluster.length,seconds:Math.round(Math.max(0,Math.min(duration,duration-remaining))*10)/10};
+ return {cluster,score:cluster.length,seconds:Math.round(Math.max(0,Math.min(duration,duration-remaining))*100)/100};
 }
 
 function makeShiso(){

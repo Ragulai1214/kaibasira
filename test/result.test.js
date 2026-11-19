@@ -6,7 +6,7 @@ import {cutBonds} from '../src/rules.js';
 import {resultSnapshot,createResultScene} from '../src/result-scene.js';
 test('result uses largest peeled cluster and freezes elapsed seconds',()=>{
  const cells=makeMuscleCells(20,.31);for(const p of cells)p.detachedFromShell=true;cutBonds(cells,cells[0].id);
- const result=resultSnapshot(cells,60,42.37);assert.equal(result.score,19);assert.equal(result.seconds,17.6);
+ const result=resultSnapshot(cells,60,42.37);assert.equal(result.score,19);assert.equal(result.seconds,17.63);
  assert.equal(resultSnapshot(cells,60,0).seconds,60);
 });
 test('served muscle lands on the plate and stays still after landing',()=>{

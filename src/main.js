@@ -37,7 +37,7 @@ const pending=new THREE.Vector2(),keys=new Set(),step=1/120;
 function resize(){const aspect=innerWidth/innerHeight,halfHeight=Math.max(4.8,5.3/aspect);renderer.setSize(innerWidth,innerHeight);camera.top=halfHeight;camera.bottom=-halfHeight;camera.left=-halfHeight*aspect;camera.right=halfHeight*aspect;camera.updateProjectionMatrix();}
 window.addEventListener('resize',()=>{resize();resultView?.resize(innerWidth,innerHeight);});resize();
 function clearInput(){pending.set(0,0);force=rawForce=0;movePointer=dialPointer=null;previous=null;keys.clear();}
-function hud(){status=assess(cells);$('time').textContent=Math.ceil(time);$('score').textContent=status.score;$('counts').textContent=`剥離 ${status.peeled} / ${cells.length} 本 · 最大の塊 ${status.score} 本`;}
+function hud(){status=assess(cells);$('time').textContent=time.toFixed(2);$('score').textContent=status.score;$('counts').textContent=`剥離 ${status.peeled} / ${cells.length} 本 · 最大の塊 ${status.score} 本`;}
 function reset(){
  resultView?.clearFood();celebration=null;fanfare.stop();roundDuration=C.duration;document.body.classList.remove('celebrating');$('result-screen').hidden=true;$('result-transition').style.opacity=0;
  physics?.dispose();cells=makeMuscleCells(C.count,C.size);physics=new GamePhysics(cells,shell.children[0].geometry,C,scene,skinJobs);time=C.duration;angle=0;finished=false;accumulator=0;clearInput();hud();physics.render();$('feedback').textContent='ヘラを貝柱に差し込もう';
@@ -49,7 +49,7 @@ function finish(reason){
  resultView.setCluster(snapshot.cluster,snapshot.cluster[0]?.group.skin,skinJobs);resultView.resize(innerWidth,innerHeight);
  document.body.classList.add('celebrating');$('debug').hidden=true;
  const reasons={'all-peeled':'全ての貝柱が剥がれました！','no-improvement':'','timeout':'制限時間になりました'};
- $('result-score').textContent=snapshot.score;$('result-time').textContent=snapshot.seconds.toFixed(1);
+ $('result-score').textContent=snapshot.score;$('result-time').textContent=snapshot.seconds.toFixed(2);
  $('result-comment').textContent=resultComment(snapshot.score);
  $('result-reason').textContent=reasons[reason];$('result-reason').hidden=!reasons[reason];$('result-detail').textContent=`最大の塊 ${snapshot.score} 本 · 剥離 ${status.peeled} 本 / 未剥離 ${status.remaining} 本`;
 }
@@ -106,7 +106,7 @@ function frame(now){
    if(t>=1&&!celebration.shown){celebration.shown=true;$('result-screen').hidden=false;fanfare.play();$('retry').focus({preventScroll:true});}
    if(celebration.shown)resultView.update(t-1);
   }
-  $('time').textContent=Math.ceil(time);$('dial-arrow').style.transform=`rotate(${-angle*180/Math.PI}deg)`;$('needle').style.left=`${force*100}%`;
+  $('time').textContent=time.toFixed(2);$('dial-arrow').style.transform=`rotate(${-angle*180/Math.PI}deg)`;$('needle').style.left=`${force*100}%`;
  }
  if(celebration?.shown)renderer.render(resultView.scene,resultView.camera);else renderer.render(scene,camera);requestAnimationFrame(frame);
 }
