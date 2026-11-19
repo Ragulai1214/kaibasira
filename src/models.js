@@ -116,12 +116,18 @@ function makeSmoothSkin(cells){
  skin.userData={base:vertices.slice(),weights};return skin;
 }
 function updateSmoothSkin(skin,peeledColor){
+ const state=skin.userData;const members=state.members??=[...new Set(state.weights.flatMap(row=>row.map(n=>n.p)))];
+ const lifts=members.map(p=>p.lift),flags=members.map(p=>`${p.detachedFromShell}:${p.damaged}`);
+ const move=!state.lastLifts||lifts.some((v,i)=>Math.abs(v-state.lastLifts[i])>1e-5);
+ const tint=state.lastColor!==peeledColor||!state.lastFlags||flags.some((v,i)=>v!==state.lastFlags[i]);
+ if(!move&&!tint)return;
+ if(move)state.lastLifts=lifts;if(tint){state.lastFlags=flags;state.lastColor=peeledColor;}
  const position=skin.geometry.attributes.position,color=skin.geometry.attributes.color,{base,weights}=skin.userData;
  const cream=new THREE.Color('#f3e5c4'),peeled=new THREE.Color(peeledColor),damage=new THREE.Color('#e3bd98');
  for(let i=0;i<weights.length;i++){
   let lift=0,r=0,g=0,b=0;for(const {p,w} of weights[i]){lift+=p.lift*w;const c=p.damaged?damage:p.detachedFromShell?peeled:cream;r+=c.r*w;g+=c.g*w;b+=c.b*w;}
-  position.setY(i,base[i*3+1]+lift);color.setXYZ(i,r,g,b);
- }position.needsUpdate=color.needsUpdate=true;
+  if(move)position.setY(i,base[i*3+1]+lift);if(tint)color.setXYZ(i,r,g,b);
+ }if(move)position.needsUpdate=true;if(tint)color.needsUpdate=true;
 }
 
 export function makeSkin(cells){
@@ -139,4 +145,49 @@ export function updateSkin(visual,peeledColor){
   if(p){mesh.position.copy(p.center);mesh.position.y+=p.lift;mesh.material.color.set(p.damaged?'#e3bd98':peeledColor);}
   else updateSmoothSkin(mesh,peeledColor);
  }
+}
+
+export function disposeSkin(visual){visual.traverse(o=>{o.geometry?.dispose();o.material?.dispose();});}
+
+export function packSkin(visual){
+ return visual.children.filter(m=>!m.userData.cell).map(m=>{
+  const rows=m.userData.weights,ids=new Int32Array(rows.length*4).fill(-1),weights=new Float32Array(rows.length*4);
+  rows.forEach((row,i)=>row.forEach((n,j)=>{ids[i*4+j]=n.p.id;weights[i*4+j]=n.w;}));
+  return {positions:m.userData.base.slice(),normals:m.geometry.attributes.normal.array.slice(),ids,weights};
+ });
+}
+export function unpackSkin(parts,cells){
+ const visual=new THREE.Group(),byId=new Map(cells.map(p=>[p.id,p]));
+ for(const part of parts){
+  const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.BufferAttribute(part.positions.slice(),3));geometry.setAttribute('normal',new THREE.BufferAttribute(part.normals,3));geometry.setAttribute('color',new THREE.Float32BufferAttribute(new Float32Array(part.positions.length),3));
+  const mesh=new THREE.Mesh(geometry,new THREE.MeshPhysicalMaterial({vertexColors:true,roughness:.3,clearcoat:.65,clearcoatRoughness:.22,...surfaceStencil(true)}));
+  const weights=[];for(let i=0;i<part.ids.length;i+=4){const row=[];for(let j=0;j<4;j++){const p=byId.get(part.ids[i+j]);if(p)row.push({p,w:part.weights[i+j]});}weights.push(row);}
+  mesh.userData={base:part.positions,weights};mesh.castShadow=mesh.receiveShadow=true;visual.add(mesh);
+ }return visual;
+}
+
+// Reuse existing triangles immediately while a new smooth cut surface is computed.
+// Intact columns never become separate boxes. Removed cells lose their surface now.
+export function subsetSkin(source,cells){
+ const visual=makeSkin(cells.filter(p=>p.damaged)),byId=new Map(cells.filter(p=>!p.damaged).map(p=>[p.id,p]));
+ if(!source||!byId.size)return visual;
+ for(const mesh of source.children){
+  if(mesh.userData.cell)continue;
+  const {base,weights}=mesh.userData,selected=[],prior=mesh.geometry.index?.array;
+  const owners=mesh.userData.owners??=Int32Array.from(weights,row=>row.length?row.reduce((a,b)=>a.w>b.w?a:b).p.id:-1);
+  const count=prior?.length??weights.length;
+  for(let i=0;i<count;i+=3){const a=prior?prior[i]:i,b=prior?prior[i+1]:i+1,c=prior?prior[i+2]:i+2;
+   if(byId.has(owners[a])&&byId.has(owners[b])&&byId.has(owners[c]))selected.push(a,b,c);
+  }
+  if(!selected.length)continue;
+  const rows=weights.map(row=>{
+   if(row.every(n=>byId.get(n.p.id)===n.p))return row;
+   const kept=row.filter(n=>byId.has(n.p.id)),sum=kept.reduce((s,n)=>s+n.w,0);
+   return kept.map(n=>({p:byId.get(n.p.id),w:n.w/sum}));
+  });
+  const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.BufferAttribute(base.slice(),3));geometry.setAttribute('normal',mesh.geometry.attributes.normal.clone());geometry.setAttribute('color',new THREE.Float32BufferAttribute(new Float32Array(base.length),3));geometry.setIndex(selected);
+  // Unused vertices remain in the fast copied buffers, but must not enlarge bounds.
+  const bounds=new THREE.Box3(),v=new THREE.Vector3();for(const i of selected)bounds.expandByPoint(v.fromArray(base,i*3));geometry.boundingBox=bounds;
+  const m=new THREE.Mesh(geometry,mesh.material.clone());m.userData={base:base.slice(),weights:rows,owners};m.castShadow=m.receiveShadow=true;visual.add(m);
+ }return visual;
 }

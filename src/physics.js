@@ -1,7 +1,7 @@
 import RAPIER from '@dimforge/rapier3d-compat';
 import * as THREE from 'three';
 import {components,cutBonds,classify,assess} from './rules.js';
-import {makeSkin,updateSkin} from './models.js';
+import {makeSkin,updateSkin,subsetSkin,unpackSkin,disposeSkin} from './models.js';
 export const ready=RAPIER.init();
 export const FLOOR_Y=-.15;
 const vec=v=>new THREE.Vector3(v.x,v.y,v.z);
@@ -28,7 +28,8 @@ function overlapArea(cell,shape,position,rotation){
 }
 
 export class GamePhysics {
- constructor(cells,shellGeometry,config,scene=null){
+ constructor(cells,shellGeometry,config,scene=null,skinJobs=null){
+  this.skinJobs=skinJobs;
   this.cells=cells;this.config=config;this.scene=scene;this.groups=[];this.feedback='ヘラを貝柱に差し込もう';
   this.world=new RAPIER.World({x:0,y:-7,z:0});this.world.timestep=1/120;
   this.world.numSolverIterations=6;
@@ -50,7 +51,7 @@ export class GamePhysics {
   this.sway={x:0,z:0,vx:0,vz:0};this.rebuild();this.world.propagateModifiedBodyPositionsToColliders();
  }
  dispose(){for(const g of this.groups)this.removeSkin(g);this.world.free();}
- removeSkin(g){if(g.skin){this.scene.remove(g.skin);g.skin.traverse(object=>{object.geometry?.dispose();object.material?.dispose();});}}
+ removeSkin(g){this.skinJobs?.cancel(g);if(g.skin){this.scene.remove(g.skin);disposeSkin(g.skin);}}
  rebuild(direction={x:0,z:0},struck=new Set()){
   const previous=this.groups,existing=new Map(previous.map(g=>[g.key,g])),next=[];
   for(const members of components(this.cells)){
@@ -60,8 +61,17 @@ export class GamePhysics {
    if(group){existing.delete(key);if(group.anchored&&!anchor)this.releaseGroup(group,direction);next.push(group);continue;}
    const old=members[0].group,position=old?old.body.translation():this.shell.translation(),rotation=old?old.body.rotation():this.shell.rotation();
    const desc=(anchor?RAPIER.RigidBodyDesc.kinematicPositionBased():RAPIER.RigidBodyDesc.dynamic()).setTranslation(position.x,position.y,position.z).setRotation(rotation).setLinearDamping(.25).setAngularDamping(.35).setCcdEnabled(true);
-   const body=this.world.createRigidBody(desc);group={key,members,body,anchored:anchor,skin:this.scene?makeSkin(members):null};
+   const deferred=this.scene&&old&&this.skinJobs;
+   const body=this.world.createRigidBody(desc);group={key,members,body,anchored:anchor,skin:this.scene?(deferred?subsetSkin(old.skin,members):makeSkin(members)):null};
    if(group.skin)this.scene.add(group.skin);
+   if(deferred&&members.some(p=>!p.damaged)){
+    const target=group;
+    this.skinJobs.request(target,members,parts=>{
+     const replacement=unpackSkin(parts,members);updateSkin(replacement,this.config.peeledColor);
+     for(const child of [...target.skin.children])if(!child.userData.cell){target.skin.remove(child);disposeSkin(child);}
+     for(const child of [...replacement.children])target.skin.add(child);
+    });
+   }
    for(const p of members){p.group=group;p.collider=this.world.createCollider(RAPIER.ColliderDesc.cuboid(p.half.x,p.half.y,p.half.z).setTranslation(p.center.x,p.center.y+p.lift,p.center.z).setCollisionGroups(anchor?(8<<16)|(4|16):(16<<16)|31).setMass(.035).setFriction(.55).setRestitution(.32),body);}
    if(!anchor){
     if(old&&!old.anchored){body.setLinvel(old.body.linvel(),true);body.setAngvel(old.body.angvel(),true);}

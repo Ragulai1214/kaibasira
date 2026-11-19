@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import {components} from './rules.js';
-import {makeSkin,updateSkin} from './models.js';
+import {makeSkin,updateSkin,subsetSkin,unpackSkin,disposeSkin} from './models.js';
 
 function rectangularSashimiPlate(){
  // Rounded rectangular rings form a closed, shallow ceramic dish, including its underside.
@@ -97,12 +97,24 @@ export function createResultScene(cluster){
 
  const servingHeight=.02+.13; // Plate placement + the flat inner surface height.
  const hero=new THREE.Group();hero.position.set(-.95,servingHeight,.45);scene.add(hero);
- if(cluster.length){
-  const copies=cluster.map(p=>({...p,center:p.center.clone(),half:p.half.clone(),lift:0}));
-  const food=makeSkin(copies);updateSkin(food,'#f0dfbd');
-  const bounds=new THREE.Box3().setFromObject(food),center=bounds.getCenter(new THREE.Vector3()),size=bounds.getSize(new THREE.Vector3());
+ let foodJobs=null;
+ const clearFood=()=>{foodJobs?.cancel(hero);for(const food of [...hero.children]){hero.remove(food);disposeSkin(food);}};
+ const mountFood=food=>{
+  updateSkin(food,'#f0dfbd');
+  const bounds=new THREE.Box3().setFromObject(food);if(bounds.isEmpty()){disposeSkin(food);return;}
+  const center=bounds.getCenter(new THREE.Vector3()),size=bounds.getSize(new THREE.Vector3());
   const scale=Math.min(1,3.2/Math.max(size.x,size.z));food.position.set(-center.x*scale,-bounds.min.y*scale,-center.z*scale);food.scale.setScalar(scale);hero.add(food);
- }
+ };
+ const setCluster=(cluster,source=null,jobs=null)=>{
+  clearFood();foodJobs=jobs;if(!cluster.length)return;
+  const copies=cluster.map(p=>({...p,center:p.center.clone(),half:p.half.clone(),lift:0}));
+  mountFood(source?subsetSkin(source,copies):makeSkin(copies));
+  if(source&&jobs&&copies.some(p=>!p.damaged))jobs.request(hero,copies,parts=>{
+   const food=unpackSkin(parts,copies);const boxes=makeSkin(copies.filter(p=>p.damaged));for(const box of [...boxes.children])food.add(box);
+   clearFood();mountFood(food);
+  });
+ };
+ setCluster(cluster);
  // Actual chopsticks and a small ceramic rest complete the serving arrangement.
  const rest=add(new THREE.BoxGeometry(.65,.14,.25),'#dce5e1');rest.position.set(1.05,.09,2.55);
  for(const z of [2.42,2.64]){const stick=add(new THREE.CylinderGeometry(.035,.055,5.8,8),'#503520');stick.rotation.z=Math.PI/2;stick.position.set(-.6,.2,z);}
@@ -118,8 +130,8 @@ export function createResultScene(cluster){
   for(let i=0;i<particles.length;i++){const p=particles[i];dummy.position.set(p.x+p.vx*t,p.y-t*1.5-t*t*.3,p.z+Math.sin(t+p.spin)*.3);dummy.rotation.set(p.spin+t*2,p.spin+t*.7,t+p.spin);dummy.updateMatrix();confetti.setMatrixAt(i,dummy.matrix);}confetti.instanceMatrix.needsUpdate=true;
  };
  update(0);
- const dispose=()=>{const geometries=new Set(),materials=new Set();scene.traverse(o=>{if(o.geometry)geometries.add(o.geometry);if(o.material)for(const m of Array.isArray(o.material)?o.material:[o.material])materials.add(m);});for(const g of geometries)g.dispose();for(const m of materials){m.map?.dispose();m.dispose();}light.shadow.dispose();confetti.dispose();};
- return {scene,camera,hero,resize,update,dispose};
+ const dispose=()=>{clearFood();const geometries=new Set(),materials=new Set();scene.traverse(o=>{if(o.geometry)geometries.add(o.geometry);if(o.material)for(const m of Array.isArray(o.material)?o.material:[o.material])materials.add(m);});for(const g of geometries)g.dispose();for(const m of materials){m.map?.dispose();m.dispose();}light.shadow.dispose();confetti.dispose();};
+ return {scene,camera,hero,resize,update,dispose,setCluster,clearFood};
 }
 
 export class Fanfare {
